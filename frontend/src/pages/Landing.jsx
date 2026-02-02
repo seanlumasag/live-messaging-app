@@ -6,6 +6,8 @@ function Landing() {
       <header className="site-header">
         <div className="logo">LiveChat</div>
         <nav className="nav-links">
+        </nav>
+        <nav className="nav-actions">
           <a href="/auth">Sign in</a>
           <a className="btn primary" href="/auth">Get started</a>
         </nav>
@@ -13,10 +15,15 @@ function Landing() {
 
       <main className="hero">
         <div className="hero-text">
-          <h1>Live messaging, organized in one place.</h1>
+          <h1>
+            Live messaging, organized
+            <br />
+            in one place.
+          </h1>
           <p>
-            Keep group rooms and 1:1s clean, fast, and always live. LiveChat is
-            built for teams that need fast, clear communication.
+            Keep group rooms and 1:1s clean, fast, and always live.
+            <br />
+            LiveChat is built for teams that need fast, clear communication.
           </p>
           <div className="hero-actions">
             <a className="btn primary" href="/auth">Get started</a>
