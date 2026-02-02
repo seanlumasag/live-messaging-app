@@ -7,7 +7,7 @@ BACKEND_DIR := backend
 
 help:
 	@echo "Targets:"
-	@echo "  make frontend-dev     # Run Vite dev server"
+	@echo "  make frontend-run     # Run Vite dev server"
 	@echo "  make frontend-build   # Build frontend"
 	@echo "  make frontend-lint    # Lint frontend"
 	@echo "  make frontend-preview # Preview production build"
@@ -17,7 +17,7 @@ help:
 	@echo "  make backend-clean    # Clean backend build"
 	@echo "  make dev              # Run frontend and backend (two terminals)"
 
-frontend-dev:
+frontend-run:
 	cd $(FRONTEND_DIR) && npm run dev
 
 frontend-build:
