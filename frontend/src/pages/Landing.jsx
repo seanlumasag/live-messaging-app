@@ -9,7 +9,7 @@ function Landing() {
         </nav>
         <nav className="nav-actions">
           <a href="/auth">Sign in</a>
-          <a className="btn primary" href="/auth">Get started</a>
+          <a className="btn primary" href="/auth?mode=signup">Get started</a>
         </nav>
       </header>
 
@@ -26,7 +26,7 @@ function Landing() {
             LiveChat is built for teams that need fast, clear communication.
           </p>
           <div className="hero-actions">
-            <a className="btn primary" href="/auth">Get started</a>
+            <a className="btn primary" href="/auth?mode=signup">Get started</a>
             <a className="btn outline" href="/auth">Sign in</a>
           </div>
         </div>
