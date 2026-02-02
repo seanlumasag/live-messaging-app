@@ -1,287 +1,171 @@
 .landing {
-  color: #0f172a;
-  position: relative;
-  overflow: hidden;
+  min-height: 100vh;
+  color: #1f1a33;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 3rem 7vw;
+  color: #1f1a33;
 }
 
 .site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2.5rem 6vw 1rem;
+  padding: 1.8rem 7vw;
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-family: "Bebas Neue", sans-serif;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
-.brand-mark {
-  font-size: 2.2rem;
-}
-
-.brand-sub {
-  font-size: 0.95rem;
-  color: #475569;
-}
-
-.nav-actions {
+.nav-links {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.nav-link {
-  color: #0f172a;
+.nav-links a {
   text-decoration: none;
+  color: inherit;
   font-weight: 600;
 }
 
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6rem;
-  padding: 0 6vw 6rem;
-}
-
 .hero {
+  padding: 4.5rem 7vw 6rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 3rem;
   align-items: center;
 }
 
-.hero-copy h1 {
-  font-size: clamp(2.6rem, 3vw + 1.6rem, 4.4rem);
-  margin: 0.4rem 0 1rem;
-  line-height: 1.05;
-  font-family: "Bebas Neue", sans-serif;
-  letter-spacing: 0.04em;
+.hero-text h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 1.1;
 }
 
-.eyebrow {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #0f766e;
-  font-size: 0.75rem;
+.hero-text p {
+  color: #4b3f66;
+  font-size: 1.05rem;
+  max-width: 28rem;
 }
 
-.lead {
-  font-size: 1.1rem;
-  color: #334155;
-  max-width: 36rem;
-}
-
-.cta-row {
+.hero-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 1rem;
-  margin: 1.8rem 0 2rem;
+  margin-top: 1.8rem;
+  flex-wrap: wrap;
 }
 
 .btn {
   border: none;
   border-radius: 999px;
-  padding: 0.85rem 1.7rem;
-  font-weight: 700;
+  padding: 0.75rem 1.6rem;
+  font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  cursor: pointer;
 }
 
 .btn.primary {
-  background: #0f766e;
-  color: #f8fafc;
-  box-shadow: 0 15px 30px rgba(15, 118, 110, 0.3);
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(22, 163, 74, 0.25);
 }
 
-.btn.secondary {
-  background: #0f172a;
-  color: #f8fafc;
+.btn.outline {
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  color: #15803d;
+  background: #fff;
 }
 
-.btn.ghost {
-  background: transparent;
-  border: 1px solid #0f172a;
-  color: #0f172a;
-}
-
-.hero-stats {
+.hero-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 1.6rem;
+  box-shadow: 0 24px 50px rgba(22, 163, 74, 0.18);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
-.stat-value {
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin: 0;
-}
-
-.stat-label {
-  margin: 0.2rem 0 0;
-  color: #475569;
-  font-size: 0.9rem;
-}
-
-.hero-panel {
-  background: #0f172a;
-  border-radius: 28px;
-  padding: 1.8rem;
-  color: #e2e8f0;
-  box-shadow: 0 40px 80px rgba(15, 23, 42, 0.25);
-  position: relative;
-}
-
-.panel-header {
+.card-header {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  font-weight: 600;
+  color: #3a2e5c;
 }
 
-.panel-pill {
-  padding: 0.35rem 0.8rem;
-  background: rgba(148, 163, 184, 0.15);
+.pill {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  padding: 0.25rem 0.7rem;
   border-radius: 999px;
   font-size: 0.75rem;
 }
 
-.panel-pill.muted {
-  color: #94a3b8;
-}
-
-.panel-body {
+.card-body {
   display: grid;
   gap: 1rem;
 }
 
-.message {
-  background: rgba(30, 41, 59, 0.9);
-  border-radius: 16px;
-  padding: 0.8rem 1rem;
+.card-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+}
+
+.avatar.muted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.card-name {
+  margin: 0;
+  font-weight: 600;
+  color: #2a1f45;
+}
+
+.card-text {
+  margin: 0.2rem 0 0;
+  color: #5d4f7f;
   font-size: 0.95rem;
 }
 
-.message.outgoing {
-  background: rgba(15, 118, 110, 0.35);
-  border: 1px solid rgba(94, 234, 212, 0.25);
-}
-
-.message-author {
-  margin: 0 0 0.2rem;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.message-time {
-  display: block;
-  font-size: 0.7rem;
-  color: #94a3b8;
-  margin-top: 0.4rem;
-}
-
-.composer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(148, 163, 184, 0.1);
-  padding: 0.75rem 1rem;
+.card-footer {
+  padding: 0.7rem 1rem;
   border-radius: 999px;
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.composer-actions {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  background: #22d3ee;
-  border-radius: 50%;
-}
-
-.features,
-.steps {
-  display: grid;
-  gap: 2rem;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: clamp(2rem, 2vw + 1.2rem, 3rem);
-  font-family: "Bebas Neue", sans-serif;
-  letter-spacing: 0.04em;
-}
-
-.section-header p {
-  color: #475569;
-  max-width: 40rem;
-}
-
-.feature-grid,
-.step-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-}
-
-.feature-card,
-.step {
-  background: rgba(248, 250, 252, 0.9);
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
-}
-
-.feature-card h3,
-.step h3 {
-  margin-top: 0;
-}
-
-.step-index {
-  font-weight: 700;
-  color: #0f766e;
-  letter-spacing: 0.2em;
-}
-
-.cta-band {
-  background: linear-gradient(120deg, #0f172a, #0f766e);
-  color: #f8fafc;
-  border-radius: 28px;
-  padding: 2.5rem 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-}
-
-.site-footer {
-  padding: 2rem 6vw 3rem;
-  color: #64748b;
-  font-size: 0.9rem;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.85rem;
 }
 
 @media (max-width: 720px) {
   .site-header {
+    padding: 1.4rem 6vw;
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
 
-  .cta-band {
-    flex-direction: column;
-    align-items: flex-start;
+  .hero {
+    padding: 3rem 6vw 4rem;
   }
 }
