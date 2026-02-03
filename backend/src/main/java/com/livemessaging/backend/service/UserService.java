@@ -7,6 +7,7 @@ import com.livemessaging.backend.repository.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -54,5 +55,24 @@ public class UserService {
         }
 
         return user;
+    }
+
+    @Transactional
+    public boolean deleteByEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+
+        String normalized = email.trim().toLowerCase();
+        if (normalized.isBlank()) {
+            return false;
+        }
+
+        return userRepository.findByEmail(normalized)
+                .map(user -> {
+                    userRepository.delete(user);
+                    return true;
+                })
+                .orElse(false);
     }
 }
