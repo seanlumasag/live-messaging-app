@@ -300,18 +300,18 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(240px, 320px) 1fr;
-  background: #f8fbf9;
-  color: #1b1a1f;
+  background: #ffffff;
+  color: #1a1a1a;
 }
 
 .chat-sidebar {
   padding: 0;
-  background: #ffffff;
-  color: #1b1a1f;
   display: grid;
   gap: 0.6rem;
-  border-right: 1px solid rgba(15, 47, 35, 0.08);
+  background: #f5f5f5;
+  color: #1a1a1a;
   position: relative;
+  border-right: 1px solid #e2e2e2;
 }
 
 .chat-sidebar-header {
@@ -322,7 +322,7 @@
   top: 0;
   left: 0;
   right: 0;
-  background: #ffffff;
+  background: #f5f5f5;
   padding: 0.6rem 0.8rem;
   z-index: 1;
 }
@@ -331,8 +331,8 @@
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: #16a34a;
-  color: #ffffff;
+  background: #d6d6d6;
+  color: #1a1a1a;
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -347,7 +347,7 @@
 
 .chat-subtitle {
   font-size: 0.8rem;
-  color: #6b7d73;
+  color: #6a6a6a;
 }
 
 .chat-room-list {
@@ -357,8 +357,8 @@
 }
 
 .chat-room {
-  border: 1px solid transparent;
-  background: #f5f7f6;
+  border: 1px solid #e2e2e2;
+  background: #ffffff;
   color: inherit;
   border-radius: 12px;
   padding: 0.55rem 0.75rem;
@@ -378,23 +378,23 @@
 .chat-room span {
   display: block;
   font-size: 0.75rem;
-  color: #6b7d73;
+  color: #6a6a6a;
 }
 
 .chat-room.active {
-  background: #e6f6eb;
-  border-color: rgba(22, 163, 74, 0.35);
+  background: #eeeeee;
+  border-color: #d6d6d6;
 }
 
 .chat-room-pill {
   font-size: 0.9rem;
-  color: #16a34a;
+  color: #8a8a8a;
 }
 
 .chat-new {
   border: none;
-  background: #16a34a;
-  color: #ffffff;
+  background: #e0e0e0;
+  color: #1a1a1a;
   padding: 0.5rem 0.8rem;
   border-radius: 10px;
   font-weight: 600;
@@ -407,7 +407,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 1rem;
-  background: #f8fbf9;
+  background: #ffffff;
 }
 
 .chat-panel-header {
@@ -431,7 +431,7 @@
 
 .chat-panel-header span {
   font-size: 0.85rem;
-  color: #5d7b6a;
+  color: #6a6a6a;
 }
 
 .chat-thread {
@@ -451,7 +451,8 @@
   gap: 0.35rem;
   font-size: 0.95rem;
   line-height: 1.35;
-  box-shadow: 0 6px 18px rgba(15, 47, 35, 0.08);
+  background: #f2f2f2;
+  border: 1px solid #e2e2e2;
 }
 
 .chat-bubble p {
@@ -460,32 +461,29 @@
 
 .chat-bubble span {
   font-size: 0.68rem;
-  color: #6f8b7b;
+  color: #7a7a7a;
 }
 
 .chat-bubble.incoming {
-  background: #eef2ef;
   justify-self: start;
 }
 
 .chat-bubble.outgoing {
-  background: #16a34a;
-  color: #ffffff;
   justify-self: end;
+  background: #e6e6e6;
 }
 
 .chat-bubble.outgoing span {
-  color: rgba(255, 255, 255, 0.75);
 }
 
 .chat-compose {
   display: flex;
   gap: 0.8rem;
   align-items: center;
-  background: #ffffff;
+  background: #f7f7f7;
   border-radius: 999px;
   padding: 0.4rem 0.7rem 0.4rem 0.95rem;
-  border: 1px solid rgba(15, 47, 35, 0.08);
+  border: 1px solid #e2e2e2;
 }
 
 .chat-compose input {
