@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { MessageCircle, Settings, LogOut, Search, User, MoreVertical } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Conversation {
   id: string;
@@ -32,6 +33,7 @@ export function Sidebar({
   isRoomActionLoading,
   roomActionError,
 }: SidebarProps) {
+  const navigate = useNavigate();
   const [newRoomName, setNewRoomName] = React.useState('');
   const [joinRoomName, setJoinRoomName] = React.useState('');
 
@@ -180,7 +182,12 @@ export function Sidebar({
             </h4>
             <p className="text-sm text-gray-500">Online</p>
           </div>
-          <button className="p-2 hover:bg-green-50 rounded-lg transition-colors">
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+            title="Settings"
+          >
             <Settings className="w-5 h-5 text-gray-600" />
           </button>
         </div>
