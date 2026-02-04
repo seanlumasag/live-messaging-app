@@ -88,7 +88,7 @@ export function Chat() {
   const handleUnauthorized = (err: unknown) => {
     if (err && typeof err === 'object' && 'status' in err) {
       const status = (err as { status: number }).status;
-      if (status === 401) {
+      if (status === 401 || status === 403) {
         clearAuth();
         navigate('/auth');
         return true;
