@@ -1,136 +1,102 @@
-# live-messaging-app
+# LiveChat
 
-A full-stack messaging application built with React/Vite frontend and Java/Spring Boot backend.
+Real-time messaging web app with JWT authentication, chat rooms, and message history.
 
-## Project Structure
+## Demo
 
-```
-live-messaging-app/
-├── frontend/          # React + Vite frontend
-├── backend/           # Spring Boot backend
-└── README.md
-```
-
-## Prerequisites
-
-- Node.js (v20+)
-- npm (v10+)
-- Java 17+
-- Maven 3.6+
-
-## Setup Instructions
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The frontend will be available at `http://localhost:5173`
-
-### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Build the project:
-   ```bash
-   mvn clean install
-   ```
-
-3. Run the Spring Boot application:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-The backend API will be available at `http://localhost:8080`
-
-## Running the Full Stack App
-
-1. Start the backend first (terminal 1):
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-
-2. Start the frontend (terminal 2):
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-3. Open your browser to `http://localhost:5173`
-
-## Available Scripts
-
-### Frontend
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Backend
-
-- `mvn spring-boot:run` - Run the application
-- `mvn test` - Run tests
-- `mvn clean install` - Build the project
-
-## API Endpoints
-
-### Health Check
-- **GET** `/api/health` - Returns backend status
-  ```json
-  {
-    "status": "UP",
-    "message": "Backend is running"
-  }
-  ```
-
-## Technology Stack
-
-### Frontend
-- React 18
-- Vite 6
-- Modern JavaScript (ES6+)
-
-### Backend
-- Java 17
-- Spring Boot 3.2.1
-- Spring Web
-- Maven
+- Live demo: not deployed yet
+- Screenshot/GIF: add one when ready
 
 ## Features
 
-- ✅ React frontend with Vite for fast development
-- ✅ Spring Boot REST API backend
-- ✅ CORS configuration for frontend-backend communication
-- ✅ Health check endpoint
-- ✅ Hot Module Replacement (HMR) for frontend
-- ✅ Spring DevTools for backend auto-reload
+- Email/password authentication (JWT-based)
+- Create, join, and delete chat rooms
+- Message history per room
+- Room membership enforcement on API calls
+- REST API backend with health check endpoint
 
-## Development
+## Tech Stack
 
-The frontend is configured to make API calls to `http://localhost:8080/api/`. The backend is configured to accept CORS requests from `http://localhost:5173`.
+- Frontend: React 18 + Vite 6 + Tailwind CSS
+- Backend: Java 17 + Spring Boot 3.2
+- Database: PostgreSQL (default config)
+- Auth: JWT
+- Deploy: Docker (Render), Vercel (frontend)
 
-## Next Steps
+## Setup
 
-- Add database integration (PostgreSQL, MySQL, or MongoDB)
-- Implement user authentication
-- Add WebSocket support for real-time messaging
-- Create message sending and receiving functionality
-- Add user management
-- Implement chat rooms or channels
+Prereqs:
+- Node.js 20+
+- npm 10+
+- Java 17+
+- Maven 3.6+
+- PostgreSQL
+
+Backend env vars (required unless using defaults):
+```
+DB_URL=jdbc:postgresql://localhost:5432/livemessaging
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+JWT_EXPIRATION_MS=86400000
+```
+
+Frontend env vars:
+```
+VITE_API_URL=http://localhost:8080
+```
+
+Run locally:
+```
+git clone <repo-url>
+cd live-messaging-app
+
+cd backend
+mvn clean install
+mvn spring-boot:run
+```
+
+In a second terminal:
+```
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend: `http://localhost:5173`  
+Backend: `http://localhost:8080`
+
+## Architecture
+
+The frontend is a React SPA that calls a Spring Boot REST API. Authentication uses JWTs stored in local storage and sent on API requests. Rooms, memberships, and messages are persisted in PostgreSQL. Room membership is enforced server-side before listing or writing messages. The backend also exposes a health check endpoint at `/api/health`.
+
+## Deploy Frontend to Vercel
+
+1. Create a new Vercel project and connect this repo.
+2. Vercel uses `vercel.json` automatically:
+   - Install: `cd frontend && npm install`
+   - Build: `cd frontend && npm run build`
+   - Output: `frontend/dist`
+3. Set `VITE_API_URL` in Vercel Environment Variables to your backend URL.
+4. Deploy.
+
+Notes:
+- The rewrite in `vercel.json` enables React Router client-side routes.
+
+## Deploy Backend to Render
+
+This repo includes a Dockerfile for the backend in `backend/Dockerfile`.
+
+Steps (Render UI):
+1. Create a new Web Service on Render.
+2. Connect this repo.
+3. Select **Docker** as the runtime.
+4. Set the Root Directory to `backend`.
+5. Add environment variables:
+   - `DB_URL`
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+   - `JWT_EXPIRATION_MS` (optional)
+6. Deploy.
+
+Notes:
+- The app listens on `PORT` (Render sets it automatically). If needed, set `SERVER_PORT` in Render.
