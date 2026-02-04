@@ -3,6 +3,8 @@ package com.livemessaging.backend.service;
 import com.livemessaging.backend.dto.LoginRequest;
 import com.livemessaging.backend.dto.SignupRequest;
 import com.livemessaging.backend.model.User;
+import com.livemessaging.backend.repository.MessageRepository;
+import com.livemessaging.backend.repository.RoomMemberRepository;
 import com.livemessaging.backend.repository.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,10 +16,19 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoomMemberRepository roomMemberRepository;
+    private final MessageRepository messageRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            RoomMemberRepository roomMemberRepository,
+            MessageRepository messageRepository
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roomMemberRepository = roomMemberRepository;
+        this.messageRepository = messageRepository;
     }
 
     public User register(SignupRequest request) {
@@ -70,9 +81,35 @@ public class UserService {
 
         return userRepository.findByEmail(normalized)
                 .map(user -> {
+                    messageRepository.deleteBySenderId(user.getId());
+                    roomMemberRepository.deleteByUserId(user.getId());
                     userRepository.delete(user);
                     return true;
                 })
                 .orElse(false);
+    }
+
+    @Transactional
+    public boolean deleteByEmailAndPassword(String email, String password) {
+        if (email == null || password == null) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+
+        String normalized = email.trim().toLowerCase();
+        if (normalized.isBlank() || password.isBlank()) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+
+        User user = userRepository.findByEmail(normalized)
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+
+        messageRepository.deleteBySenderId(user.getId());
+        roomMemberRepository.deleteByUserId(user.getId());
+        userRepository.delete(user);
+        return true;
     }
 }

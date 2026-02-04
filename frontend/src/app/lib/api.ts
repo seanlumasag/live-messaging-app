@@ -113,6 +113,12 @@ export const deleteRoom = (roomId: string) =>
     method: 'DELETE',
   });
 
+export const deleteAccount = (payload: { password: string }) =>
+  apiFetch<void>('/api/users/me/delete', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
 export const listMessages = (roomId: string, limit = 50) =>
   apiFetch<ChatMessageResponse[]>(`/api/rooms/${roomId}/messages?limit=${limit}`);
 

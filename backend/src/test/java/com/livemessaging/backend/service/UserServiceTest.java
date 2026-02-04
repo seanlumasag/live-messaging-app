@@ -3,6 +3,8 @@ package com.livemessaging.backend.service;
 import com.livemessaging.backend.dto.LoginRequest;
 import com.livemessaging.backend.dto.SignupRequest;
 import com.livemessaging.backend.model.User;
+import com.livemessaging.backend.repository.MessageRepository;
+import com.livemessaging.backend.repository.RoomMemberRepository;
 import com.livemessaging.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,8 +25,15 @@ class UserServiceTest {
     @Test
     void registerCreatesUserWithHashedPassword() {
         UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-        UserService userService = new UserService(userRepository, passwordEncoder);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
 
         SignupRequest request = new SignupRequest();
         request.setEmail("Test@Email.com");
@@ -46,8 +55,15 @@ class UserServiceTest {
     @Test
     void registerThrowsWhenEmailExists() {
         UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-        UserService userService = new UserService(userRepository, passwordEncoder);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
 
         SignupRequest request = new SignupRequest();
         request.setEmail("test@email.com");
@@ -62,8 +78,15 @@ class UserServiceTest {
     @Test
     void authenticateThrowsOnBadCredentials() {
         UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-        UserService userService = new UserService(userRepository, passwordEncoder);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
 
         User stored = new User();
         stored.setEmail("test@email.com");

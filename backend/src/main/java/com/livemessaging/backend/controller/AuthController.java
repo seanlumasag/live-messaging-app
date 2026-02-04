@@ -45,4 +45,11 @@ public class AuthController {
         String token = jwtService.generateToken(userDetails);
         return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getDisplayName()));
     }
+
+    @PostMapping("/delete")
+    public ResponseEntity<Void> deleteAccount(@RequestBody LoginRequest request) {
+        User user = userService.authenticate(request);
+        userService.deleteByEmail(user.getEmail());
+        return ResponseEntity.noContent().build();
+    }
 }

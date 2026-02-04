@@ -1,9 +1,46 @@
+import { useState } from 'react';
 import { ArrowLeft, Lock, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { deleteAccount } from '../lib/api';
 
 export function Settings() {
   const email = localStorage.getItem('userEmail') || 'you@example.com';
   const userId = localStorage.getItem('userId') || 'unknown';
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  const clearAuth = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('authToken');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setDeleteError('Please enter your password to continue.');
+      return;
+    }
+
+    setDeleteError(null);
+    setIsDeleting(true);
+    try {
+      await deleteAccount({ password: deletePassword });
+      clearAuth();
+      navigate('/');
+    } catch (err) {
+      if (err && typeof err === 'object' && 'message' in err) {
+        setDeleteError(String((err as { message: string }).message));
+      } else {
+        setDeleteError('Unable to delete account. Please try again.');
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -91,12 +128,24 @@ export function Settings() {
                 <input
                   type="password"
                   placeholder="••••••••"
+                  value={deletePassword}
+                  onChange={(event) => setDeletePassword(event.target.value)}
                   className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 />
               </label>
             </div>
-            <button className="mt-4 w-full rounded-lg bg-red-500 px-5 py-2 text-sm font-semibold text-white hover:bg-red-600">
-              Delete account
+            {deleteError && (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                {deleteError}
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={handleDeleteAccount}
+              className="mt-4 w-full rounded-lg bg-red-500 px-5 py-2 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-60"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete account'}
             </button>
           </section>
         </div>

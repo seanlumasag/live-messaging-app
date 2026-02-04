@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findByRoomIdOrderByCreatedAtAsc(UUID roomId, Pageable pageable);
     void deleteByRoomId(UUID roomId);
+    void deleteBySenderId(UUID senderId);
 }

@@ -2,6 +2,7 @@ package com.livemessaging.backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.livemessaging.backend.dto.DeleteAccountRequest;
 import com.livemessaging.backend.dto.LoginRequest;
 import com.livemessaging.backend.dto.SignupRequest;
 import org.junit.jupiter.api.Test;
@@ -44,8 +45,13 @@ class UserIntegrationTest {
         JsonNode signupJson = objectMapper.readTree(signupResult.getResponse().getContentAsString());
         String token = signupJson.get("token").asText();
 
+        DeleteAccountRequest deleteRequest = new DeleteAccountRequest();
+        deleteRequest.setPassword("password123");
+
         mockMvc.perform(delete("/api/users/me")
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteRequest)))
                 .andExpect(status().isNoContent());
 
         LoginRequest login = new LoginRequest();
