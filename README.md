@@ -68,35 +68,3 @@ Backend: `http://localhost:8080`
 ## Architecture
 
 The frontend is a React SPA that calls a Spring Boot REST API. Authentication uses JWTs stored in local storage and sent on API requests. Rooms, memberships, and messages are persisted in PostgreSQL. Room membership is enforced server-side before listing or writing messages. The backend also exposes a health check endpoint at `/api/health`.
-
-## Deploy Frontend to Vercel
-
-1. Create a new Vercel project and connect this repo.
-2. Vercel uses `vercel.json` automatically:
-   - Install: `cd frontend && npm install`
-   - Build: `cd frontend && npm run build`
-   - Output: `frontend/dist`
-3. Set `VITE_API_URL` in Vercel Environment Variables to your backend URL.
-4. Deploy.
-
-Notes:
-- The rewrite in `vercel.json` enables React Router client-side routes.
-
-## Deploy Backend to Render
-
-This repo includes a Dockerfile for the backend in `backend/Dockerfile`.
-
-Steps (Render UI):
-1. Create a new Web Service on Render.
-2. Connect this repo.
-3. Select **Docker** as the runtime.
-4. Set the Root Directory to `backend`.
-5. Add environment variables:
-   - `DB_URL`
-   - `DB_USERNAME`
-   - `DB_PASSWORD`
-   - `JWT_EXPIRATION_MS` (optional)
-6. Deploy.
-
-Notes:
-- The app listens on `PORT` (Render sets it automatically). If needed, set `SERVER_PORT` in Render.
