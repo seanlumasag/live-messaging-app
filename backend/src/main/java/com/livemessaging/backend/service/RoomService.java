@@ -4,6 +4,7 @@ import com.livemessaging.backend.dto.RoomResponse;
 import com.livemessaging.backend.model.Room;
 import com.livemessaging.backend.model.RoomMember;
 import com.livemessaging.backend.model.User;
+import com.livemessaging.backend.repository.MessageRepository;
 import com.livemessaging.backend.repository.RoomMemberRepository;
 import com.livemessaging.backend.repository.RoomRepository;
 import com.livemessaging.backend.repository.UserRepository;
@@ -21,11 +22,18 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final RoomMemberRepository roomMemberRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
-    public RoomService(RoomRepository roomRepository, RoomMemberRepository roomMemberRepository, UserRepository userRepository) {
+    public RoomService(
+            RoomRepository roomRepository,
+            RoomMemberRepository roomMemberRepository,
+            UserRepository userRepository,
+            MessageRepository messageRepository
+    ) {
         this.roomRepository = roomRepository;
         this.roomMemberRepository = roomMemberRepository;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     public List<RoomResponse> listRoomsForUser(String email) {
@@ -111,6 +119,21 @@ public class RoomService {
 
         return roomRepository.findByNameIgnoreCase(name.trim())
                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+    }
+
+    @Transactional
+    public void deleteRoom(UUID roomId, String email) {
+        User user = getUserByEmail(email);
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+        if (!roomMemberRepository.existsByRoomIdAndUserId(roomId, user.getId())) {
+            throw new IllegalArgumentException("Unauthorized");
+        }
+
+        messageRepository.deleteByRoomId(roomId);
+        roomMemberRepository.deleteByRoomId(roomId);
+        roomRepository.delete(room);
     }
 
     private User getUserByEmail(String email) {

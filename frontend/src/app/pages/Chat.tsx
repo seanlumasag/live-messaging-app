@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChatMessageResponse,
   createRoom,
+  deleteRoom,
   joinRoomByName,
   listMessages,
   listRooms,
@@ -57,6 +58,7 @@ export function Chat() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomActionError, setRoomActionError] = useState<string | null>(null);
   const [isRoomActionLoading, setIsRoomActionLoading] = useState(false);
+  const [isDeletingRoom, setIsDeletingRoom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -253,6 +255,38 @@ export function Chat() {
     // In a real app, you would load messages for this conversation
   };
 
+  const handleDeleteRoom = async () => {
+    if (!activeConversationId) {
+      return;
+    }
+    const target = conversations.find((room) => room.id === activeConversationId);
+    const confirmed = window.confirm(
+      `Delete "${target?.name ?? 'this room'}" and all chat history? This cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setRoomActionError(null);
+    setIsDeletingRoom(true);
+    try {
+      await deleteRoom(activeConversationId);
+      await loadRooms();
+      setMessages([]);
+    } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
+      if (err && typeof err === 'object' && 'message' in err) {
+        setRoomActionError(String((err as { message: string }).message));
+      } else {
+        setRoomActionError('Unable to delete room. Please try again.');
+      }
+    } finally {
+      setIsDeletingRoom(false);
+    }
+  };
+
   return (
     <div className="h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -271,18 +305,30 @@ export function Chat() {
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
         <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-300 to-green-500 flex items-center justify-center text-white font-semibold">
-              {activeConversation?.avatar ?? 'CH'}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-300 to-green-500 flex items-center justify-center text-white font-semibold">
+                {activeConversation?.avatar ?? 'CH'}
+              </div>
+              <div>
+                <h1 className="font-semibold text-gray-900">
+                  {activeConversation?.name ?? 'Select a room'}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {activeConversation?.online ? 'Online' : 'Offline'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-semibold text-gray-900">
-                {activeConversation?.name ?? 'Select a room'}
-              </h1>
-              <p className="text-sm text-gray-500">
-                {activeConversation?.online ? 'Online' : 'Offline'}
-              </p>
-            </div>
+            {activeConversation && (
+              <button
+                type="button"
+                onClick={handleDeleteRoom}
+                disabled={isDeletingRoom}
+                className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+              >
+                {isDeletingRoom ? 'Deleting...' : 'Delete Room'}
+              </button>
+            )}
           </div>
         </div>
 

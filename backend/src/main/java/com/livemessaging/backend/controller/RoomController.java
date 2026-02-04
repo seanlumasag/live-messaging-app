@@ -6,6 +6,7 @@ import com.livemessaging.backend.service.RoomService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,6 +58,13 @@ public class RoomController {
     ) {
         String email = requireEmail(authentication);
         roomService.joinRoomByName(request.getName(), email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{roomId}")
+    public ResponseEntity<Void> deleteRoom(@PathVariable UUID roomId, Authentication authentication) {
+        String email = requireEmail(authentication);
+        roomService.deleteRoom(roomId, email);
         return ResponseEntity.noContent().build();
     }
 
