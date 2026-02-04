@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Client, StompSubscription } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import { MessageList, Message } from '../components/MessageList';
 import { MessageInput } from '../components/MessageInput';
 import { Sidebar } from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import {
+  API_BASE_URL,
   ChatMessageResponse,
   createRoom,
   deleteRoom,
@@ -60,10 +63,15 @@ export function Chat() {
   const [isRoomActionLoading, setIsRoomActionLoading] = useState(false);
   const [isDeletingRoom, setIsDeletingRoom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const stompClientRef = useRef<Client | null>(null);
+  const stompSubscriptionRef = useRef<StompSubscription | null>(null);
+  const activeRoomNameRef = useRef<string | null>(null);
   const navigate = useNavigate();
 
   const currentUserName = localStorage.getItem('userName') || 'You';
   const activeConversation = conversations.find(c => c.id === activeConversationId);
+  const activeRoomName = activeConversation?.name ?? null;
+  const wsUrl = `${API_BASE_URL.replace(/\/$/, '')}/ws`;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,6 +100,92 @@ export function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    activeRoomNameRef.current = activeRoomName;
+  }, [activeRoomName]);
+
+  const appendIncomingMessage = useCallback((incoming: ChatMessageResponse) => {
+    setMessages((prev) => {
+      if (prev.some((message) => message.id === incoming.id)) {
+        return prev;
+      }
+      return [...prev, toMessage(incoming, currentUserName)];
+    });
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === incoming.roomId
+          ? {
+              ...conversation,
+              lastMessage: incoming.content,
+              timestamp: formatTimestamp(incoming.timestamp),
+            }
+          : conversation,
+      ),
+    );
+  }, [currentUserName]);
+
+  const subscribeToRoom = useCallback((client: Client, roomName: string | null) => {
+    stompSubscriptionRef.current?.unsubscribe();
+    stompSubscriptionRef.current = null;
+
+    if (!roomName) {
+      return;
+    }
+
+    stompSubscriptionRef.current = client.subscribe(
+      `/topic/rooms/${roomName}`,
+      (message) => {
+        try {
+          const payload = JSON.parse(message.body) as ChatMessageResponse;
+          appendIncomingMessage(payload);
+        } catch (err) {
+          console.error('Failed to parse incoming message', err);
+        }
+      },
+    );
+  }, [appendIncomingMessage]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const client = new Client({
+      webSocketFactory: () => new SockJS(wsUrl),
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      reconnectDelay: 5000,
+      debug: () => undefined,
+    });
+
+    client.onConnect = () => {
+      subscribeToRoom(client, activeRoomNameRef.current);
+    };
+
+    client.onStompError = (frame) => {
+      console.error('STOMP error', frame.headers['message'], frame.body);
+    };
+
+    client.onWebSocketClose = () => {
+      stompSubscriptionRef.current?.unsubscribe();
+      stompSubscriptionRef.current = null;
+    };
+
+    client.activate();
+    stompClientRef.current = client;
+
+    return () => {
+      stompSubscriptionRef.current?.unsubscribe();
+      stompSubscriptionRef.current = null;
+      client.deactivate();
+      stompClientRef.current = null;
+    };
+  }, [subscribeToRoom, wsUrl]);
+
+  useEffect(() => {
+    const client = stompClientRef.current;
+    if (!client || !client.connected) {
+      return;
+    }
+    subscribeToRoom(client, activeRoomName);
+  }, [activeRoomName, subscribeToRoom]);
 
   const loadRooms = useCallback(async () => {
     setIsLoading(true);
@@ -179,20 +273,22 @@ export function Chat() {
 
     setError(null);
     try {
+      const client = stompClientRef.current;
+      if (client?.connected && activeRoomName) {
+        const token = localStorage.getItem('authToken');
+        client.publish({
+          destination: `/app/rooms/${activeRoomName}/send`,
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: JSON.stringify({
+            content: text,
+            sender: currentUserName,
+          }),
+        });
+        return;
+      }
+
       const sent = await sendMessage(activeConversationId, { content: text });
-      const mapped = toMessage(sent, currentUserName);
-      setMessages((prev) => [...prev, mapped]);
-      setConversations((prev) =>
-        prev.map((conversation) =>
-          conversation.id === activeConversationId
-            ? {
-                ...conversation,
-                lastMessage: sent.content,
-                timestamp: formatTimestamp(sent.timestamp),
-              }
-            : conversation,
-        ),
-      );
+      appendIncomingMessage(sent);
     } catch (err) {
       if (handleUnauthorized(err)) {
         return;
