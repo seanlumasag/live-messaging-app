@@ -1,5 +1,6 @@
 package com.livemessaging.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -14,9 +15,12 @@ import com.livemessaging.backend.security.WebSocketAuthChannelInterceptor;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketAuthChannelInterceptor authChannelInterceptor;
+    private final String[] allowedOrigins;
 
-    public WebSocketConfig(WebSocketAuthChannelInterceptor authChannelInterceptor) {
+    public WebSocketConfig(WebSocketAuthChannelInterceptor authChannelInterceptor,
+                           @Value("${app.cors.allowed-origins:http://localhost:5173}") String allowedOrigins) {
         this.authChannelInterceptor = authChannelInterceptor;
+        this.allowedOrigins = allowedOrigins.split("\\s*,\\s*");
     }
 
     @Override
@@ -28,7 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173");
+                .setAllowedOriginPatterns(allowedOrigins);
     }
 
     @Override
