@@ -15,9 +15,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UserServiceTest {
@@ -100,5 +103,126 @@ class UserServiceTest {
         when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
 
         assertThrows(BadCredentialsException.class, () -> userService.authenticate(request));
+    }
+
+    @Test
+    void authenticateNormalizesEmail() {
+        UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
+
+        User stored = new User();
+        stored.setEmail("test@email.com");
+        stored.setPasswordHash("hashed");
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("  TEST@EMAIL.COM ");
+        request.setPassword("password");
+
+        when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.of(stored));
+        when(passwordEncoder.matches("password", "hashed")).thenReturn(true);
+
+        User user = userService.authenticate(request);
+
+        assertEquals("test@email.com", user.getEmail());
+    }
+
+    @Test
+    void deleteByEmailReturnsFalseForBlank() {
+        UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
+
+        assertTrue(!userService.deleteByEmail("  "));
+        assertTrue(!userService.deleteByEmail(null));
+
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void deleteByEmailDeletesUserAndRelatedData() {
+        UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
+
+        User stored = new User();
+        stored.setEmail("test@email.com");
+        stored.setId(java.util.UUID.randomUUID());
+
+        when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.of(stored));
+
+        boolean deleted = userService.deleteByEmail("TEST@EMAIL.COM");
+
+        assertTrue(deleted);
+        verify(messageRepository).deleteBySenderId(stored.getId());
+        verify(roomMemberRepository).deleteByUserId(stored.getId());
+        verify(userRepository).delete(stored);
+    }
+
+    @Test
+    void deleteByEmailAndPasswordThrowsOnBlank() {
+        UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
+
+        assertThrows(BadCredentialsException.class, () -> userService.deleteByEmailAndPassword(" ", "pass"));
+        assertThrows(BadCredentialsException.class, () -> userService.deleteByEmailAndPassword("user@email.com", " "));
+    }
+
+    @Test
+    void deleteByEmailAndPasswordDeletesUser() {
+        UserRepository userRepository = mock(UserRepository.class);
+        RoomMemberRepository roomMemberRepository = mock(RoomMemberRepository.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        UserService userService = new UserService(
+                userRepository,
+                passwordEncoder,
+                roomMemberRepository,
+                messageRepository
+        );
+
+        User stored = new User();
+        stored.setEmail("test@email.com");
+        stored.setPasswordHash("hashed");
+        stored.setId(java.util.UUID.randomUUID());
+
+        when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.of(stored));
+        when(passwordEncoder.matches("password", "hashed")).thenReturn(true);
+
+        boolean deleted = userService.deleteByEmailAndPassword("test@email.com", "password");
+
+        assertTrue(deleted);
+        verify(messageRepository).deleteBySenderId(stored.getId());
+        verify(roomMemberRepository).deleteByUserId(stored.getId());
+        verify(userRepository).delete(stored);
     }
 }
