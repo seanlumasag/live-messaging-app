@@ -1,20 +1,42 @@
 import { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { login, signup } from '../lib/api';
 
 export function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock authentication - in a real app, this would call an API
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userName', name || 'User');
-    navigate('/chat');
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = isSignUp
+        ? await signup({ email, password, displayName: name || 'User' })
+        : await login({ email, password });
+
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('userName', response.displayName);
+      localStorage.setItem('userEmail', response.email);
+      localStorage.setItem('userId', response.userId);
+      localStorage.setItem('isAuthenticated', 'true');
+      navigate('/chat');
+    } catch (err) {
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(String((err as { message: string }).message));
+      } else {
+        setError('Unable to authenticate. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -33,6 +55,11 @@ export function Auth() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           {isSignUp && (
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -82,9 +109,16 @@ export function Auth() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold"
           >
-            {isSignUp ? 'Sign Up' : 'Sign In'}
+            {isSubmitting
+              ? isSignUp
+                ? 'Creating...'
+                : 'Signing In...'
+              : isSignUp
+                ? 'Sign Up'
+                : 'Sign In'}
           </button>
         </form>
 

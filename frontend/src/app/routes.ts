@@ -5,8 +5,8 @@ import { Chat } from './pages/Chat';
 
 // Simple auth check
 const checkAuth = () => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-  if (!isAuthenticated) {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
     return redirect('/auth');
   }
   return null;

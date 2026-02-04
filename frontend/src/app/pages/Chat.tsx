@@ -1,124 +1,251 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageList, Message } from '../components/MessageList';
 import { MessageInput } from '../components/MessageInput';
 import { Sidebar } from '../components/Sidebar';
-import { MessageCircle } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
+import {
+  ChatMessageResponse,
+  createRoom,
+  joinRoomByName,
+  listMessages,
+  listRooms,
+  sendMessage,
+} from '../lib/api';
 
-const MOCK_CONVERSATIONS = [
-  {
-    id: '1',
-    name: 'Alex Johnson',
-    avatar: 'AJ',
-    lastMessage: 'That sounds exciting! I wanted to chat about our upcoming meeting.',
-    timestamp: '10:30 AM',
-    unread: 2,
-    online: true,
-  },
-  {
-    id: '2',
-    name: 'Sarah Chen',
-    avatar: 'SC',
-    lastMessage: 'Thanks for the update! See you tomorrow.',
-    timestamp: 'Yesterday',
-    online: true,
-  },
-  {
-    id: '3',
-    name: 'Michael Brown',
-    avatar: 'MB',
-    lastMessage: 'Can you send me the files?',
-    timestamp: 'Monday',
-    unread: 1,
-    online: false,
-  },
-  {
-    id: '4',
-    name: 'Emma Wilson',
-    avatar: 'EW',
-    lastMessage: 'Great work on the presentation!',
-    timestamp: 'Sunday',
-    online: false,
-  },
-  {
-    id: '5',
-    name: 'David Lee',
-    avatar: 'DL',
-    lastMessage: 'Let me know when you\'re free to chat.',
-    timestamp: 'Saturday',
-    online: true,
-  },
-];
+type Conversation = {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  timestamp: string;
+  unread?: number;
+  online?: boolean;
+};
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: '1',
-    text: 'Hey! How are you doing?',
-    sender: 'Alex',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    isCurrentUser: false,
-  },
-  {
-    id: '2',
-    text: "I'm doing great! Just working on some new projects. How about you?",
-    sender: 'You',
-    timestamp: new Date(Date.now() - 1000 * 60 * 25),
-    isCurrentUser: true,
-  },
-  {
-    id: '3',
-    text: 'That sounds exciting! I wanted to chat about our upcoming meeting.',
-    sender: 'Alex',
-    timestamp: new Date(Date.now() - 1000 * 60 * 20),
-    isCurrentUser: false,
-  },
-];
+const createAvatar = (name: string) => {
+  const parts = name.trim().split(' ').filter(Boolean);
+  const letters = parts.length > 1
+    ? `${parts[0][0]}${parts[1][0]}`
+    : parts[0]?.slice(0, 2) ?? 'CH';
+  return letters.toUpperCase();
+};
+
+const formatTimestamp = (value?: string) => {
+  if (!value) {
+    return '';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString();
+};
+
+const toMessage = (message: ChatMessageResponse, currentUserName: string): Message => ({
+  id: message.id,
+  text: message.content,
+  sender: message.sender,
+  timestamp: new Date(message.timestamp),
+  isCurrentUser: message.sender === currentUserName,
+});
 
 export function Chat() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
-  const [activeConversationId, setActiveConversationId] = useState('1');
-  const [conversations] = useState(MOCK_CONVERSATIONS);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [roomActionError, setRoomActionError] = useState<string | null>(null);
+  const [isRoomActionLoading, setIsRoomActionLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  const currentUserName = localStorage.getItem('userName') || 'You';
   const activeConversation = conversations.find(c => c.id === activeConversationId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const clearAuth = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('authToken');
+  };
+
+  const handleUnauthorized = (err: unknown) => {
+    if (err && typeof err === 'object' && 'status' in err) {
+      const status = (err as { status: number }).status;
+      if (status === 401) {
+        clearAuth();
+        navigate('/auth');
+        return true;
+      }
+    }
+    return false;
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (text: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      sender: 'You',
-      timestamp: new Date(),
-      isCurrentUser: true,
+  const loadRooms = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const rooms = await listRooms();
+      const mapped = rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        avatar: createAvatar(room.name),
+        lastMessage: 'No messages yet',
+        timestamp: formatTimestamp(room.createdAt),
+        online: true,
+      }));
+
+      setConversations(mapped);
+      setActiveConversationId((current) => {
+        if (current && rooms.some((room) => room.id === current)) {
+          return current;
+        }
+        return rooms[0]?.id ?? null;
+      });
+    } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(String((err as { message: string }).message));
+      } else {
+        setError('Unable to load rooms. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!activeConversationId) {
+        setMessages([]);
+        return;
+      }
+
+      setError(null);
+      try {
+        const apiMessages = await listMessages(activeConversationId);
+        const mapped = apiMessages.map((message) => toMessage(message, currentUserName));
+        setMessages(mapped);
+
+        const last = apiMessages[apiMessages.length - 1];
+        setConversations((prev) =>
+          prev.map((conversation) =>
+            conversation.id === activeConversationId
+              ? {
+                  ...conversation,
+                  lastMessage: last?.content ?? 'No messages yet',
+                  timestamp: last ? formatTimestamp(last.timestamp) : conversation.timestamp,
+                }
+              : conversation,
+          ),
+        );
+      } catch (err) {
+        if (handleUnauthorized(err)) {
+          return;
+        }
+        if (err && typeof err === 'object' && 'message' in err) {
+          setError(String((err as { message: string }).message));
+        } else {
+          setError('Unable to load messages. Please try again.');
+        }
+      }
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    loadMessages();
+  }, [activeConversationId, currentUserName]);
 
-    // Simulate a response from the other user
-    setTimeout(() => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Thanks for your message! I\'ll get back to you soon.',
-        sender: activeConversation?.name || 'User',
-        timestamp: new Date(),
-        isCurrentUser: false,
-      };
-      setMessages((prev) => [...prev, responseMessage]);
-    }, 1500);
+  const handleSendMessage = async (text: string) => {
+    if (!activeConversationId) {
+      return;
+    }
+
+    setError(null);
+    try {
+      const sent = await sendMessage(activeConversationId, { content: text });
+      const mapped = toMessage(sent, currentUserName);
+      setMessages((prev) => [...prev, mapped]);
+      setConversations((prev) =>
+        prev.map((conversation) =>
+          conversation.id === activeConversationId
+            ? {
+                ...conversation,
+                lastMessage: sent.content,
+                timestamp: formatTimestamp(sent.timestamp),
+              }
+            : conversation,
+        ),
+      );
+    } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(String((err as { message: string }).message));
+      } else {
+        setError('Unable to send message. Please try again.');
+      }
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userName');
+    clearAuth();
     navigate('/');
+  };
+
+  const handleCreateRoom = async (name: string) => {
+    setRoomActionError(null);
+    setIsRoomActionLoading(true);
+    try {
+      await createRoom({ name });
+      await loadRooms();
+    } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
+      if (err && typeof err === 'object' && 'message' in err) {
+        setRoomActionError(String((err as { message: string }).message));
+      } else {
+        setRoomActionError('Unable to create room. Please try again.');
+      }
+    } finally {
+      setIsRoomActionLoading(false);
+    }
+  };
+
+  const handleJoinRoom = async (name: string) => {
+    setRoomActionError(null);
+    setIsRoomActionLoading(true);
+    try {
+      await joinRoomByName({ name });
+      await loadRooms();
+    } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
+      if (err && typeof err === 'object' && 'message' in err) {
+        setRoomActionError(String((err as { message: string }).message));
+      } else {
+        setRoomActionError('Unable to join room. Please try again.');
+      }
+    } finally {
+      setIsRoomActionLoading(false);
+    }
   };
 
   const handleConversationSelect = (id: string) => {
@@ -131,9 +258,13 @@ export function Chat() {
       {/* Sidebar */}
       <Sidebar
         conversations={conversations}
-        activeConversationId={activeConversationId}
+        activeConversationId={activeConversationId ?? ''}
         onConversationSelect={handleConversationSelect}
         onLogout={handleLogout}
+        onCreateRoom={handleCreateRoom}
+        onJoinRoom={handleJoinRoom}
+        isRoomActionLoading={isRoomActionLoading}
+        roomActionError={roomActionError}
       />
 
       {/* Main Chat Area */}
@@ -142,10 +273,12 @@ export function Chat() {
         <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-300 to-green-500 flex items-center justify-center text-white font-semibold">
-              {activeConversation?.avatar}
+              {activeConversation?.avatar ?? 'CH'}
             </div>
             <div>
-              <h1 className="font-semibold text-gray-900">{activeConversation?.name}</h1>
+              <h1 className="font-semibold text-gray-900">
+                {activeConversation?.name ?? 'Select a room'}
+              </h1>
               <p className="text-sm text-gray-500">
                 {activeConversation?.online ? 'Online' : 'Offline'}
               </p>
@@ -155,6 +288,16 @@ export function Chat() {
 
         {/* Messages */}
         <div className="flex-1 overflow-hidden flex flex-col">
+          {error && (
+            <div className="px-4 pt-4">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            </div>
+          )}
+          {isLoading && (
+            <div className="px-4 pt-4 text-sm text-gray-500">Loading messages...</div>
+          )}
           <MessageList messages={messages} />
           <div ref={messagesEndRef} />
         </div>
