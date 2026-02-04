@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import type { RefObject } from 'react';
 
 export interface Message {
   id: string;
@@ -10,9 +11,10 @@ export interface Message {
 
 interface MessageListProps {
   messages: Message[];
+  endRef?: RefObject<HTMLDivElement>;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, endRef }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.map((message) => (
@@ -41,6 +43,7 @@ export function MessageList({ messages }: MessageListProps) {
           </div>
         </div>
       ))}
+      <div ref={endRef} />
     </div>
   );
 }

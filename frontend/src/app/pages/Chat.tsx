@@ -440,8 +440,7 @@ export function Chat() {
           {isLoading && (
             <div className="px-4 pt-4 text-sm text-gray-500">Loading messages...</div>
           )}
-          <MessageList messages={messages} />
-          <div ref={messagesEndRef} />
+          <MessageList messages={messages} endRef={messagesEndRef} />
         </div>
 
         {/* Input */}
