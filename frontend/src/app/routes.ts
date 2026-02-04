@@ -1,4 +1,4 @@
-import { createBrowserRouter, redirect } from 'react-router';
+import { createBrowserRouter, redirect } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import { Auth } from './pages/Auth';
 import { Chat } from './pages/Chat';
