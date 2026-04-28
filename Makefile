@@ -3,11 +3,13 @@ SHELL := /bin/bash
 FRONTEND_DIR := frontend
 BACKEND_DIR := backend
 
-.PHONY: help frontend-dev frontend-build frontend-lint frontend-preview backend-run backend-test backend-package backend-clean dev
+.PHONY: help test frontend-run frontend-test frontend-build frontend-lint frontend-preview backend-run backend-test backend-package backend-clean dev
 
 help:
 	@echo "Targets:"
+	@echo "  make test             # Run backend tests, frontend tests, and frontend build"
 	@echo "  make frontend-run     # Run Vite dev server"
+	@echo "  make frontend-test    # Run frontend tests"
 	@echo "  make frontend-build   # Build frontend"
 	@echo "  make frontend-lint    # Lint frontend"
 	@echo "  make frontend-preview # Preview production build"
@@ -17,8 +19,13 @@ help:
 	@echo "  make backend-clean    # Clean backend build"
 	@echo "  make dev              # Run frontend and backend (two terminals)"
 
+test: backend-test frontend-test frontend-build
+
 frontend-run:
 	cd $(FRONTEND_DIR) && npm run dev
+
+frontend-test:
+	cd $(FRONTEND_DIR) && npm run test:run
 
 frontend-build:
 	cd $(FRONTEND_DIR) && npm run build
@@ -44,4 +51,4 @@ backend-clean:
 dev:
 	@echo "Run these in separate terminals:"
 	@echo "  make backend-run"
-	@echo "  make frontend-dev"
+	@echo "  make frontend-run"
