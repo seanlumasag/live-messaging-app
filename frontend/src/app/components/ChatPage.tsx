@@ -5,12 +5,10 @@ import SockJS from "sockjs-client";
 import {
   Check,
   MessageCircle,
-  MoreVertical,
   Plus,
   Search,
   Send,
   Settings,
-  Smile,
   Trash2,
   UserPlus,
   Users,
@@ -423,9 +421,6 @@ export function ChatPage() {
                 <button onClick={handleDeleteConversation} className="p-2 hover:bg-[#2c2c2e] rounded-lg transition-colors">
                   <Trash2 className="w-5 h-5 text-gray-400" />
                 </button>
-                <button className="p-2 hover:bg-[#2c2c2e] rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-400" />
-                </button>
               </div>
             )}
           </div>
@@ -464,9 +459,6 @@ export function ChatPage() {
                   className="w-full px-4 py-3 bg-[#2c2c2e] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-gray-600 transition-colors disabled:cursor-not-allowed"
                 />
               </div>
-              <button className="p-2 hover:bg-[#2c2c2e] rounded-lg transition-colors">
-                <Smile className="w-5 h-5 text-gray-400" />
-              </button>
               <button onClick={handleSend} disabled={!selectedChat || !messageInput.trim()} className="p-3 bg-blue-500 hover:bg-blue-600 disabled:bg-[#2c2c2e] rounded-xl transition-colors">
                 <Send className="w-5 h-5 text-white" />
               </button>
