@@ -10,6 +10,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.util.UUID;
+
 @Controller
 public class ChatController {
 
@@ -21,9 +23,9 @@ public class ChatController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @MessageMapping("/rooms/{roomName}/send")
+    @MessageMapping("/rooms/{roomId}/send")
     public void sendMessage(
-            @DestinationVariable String roomName,
+            @DestinationVariable UUID roomId,
             @Payload MessageRequest request,
             Authentication authentication
     ) {
@@ -32,7 +34,7 @@ public class ChatController {
             throw new IllegalArgumentException("Unauthorized");
         }
 
-        ChatMessage saved = messageService.sendMessage(roomName, email, request.getContent());
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomName, saved);
+        ChatMessage saved = messageService.sendMessage(roomId, email, request.getContent());
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId, saved);
     }
 }

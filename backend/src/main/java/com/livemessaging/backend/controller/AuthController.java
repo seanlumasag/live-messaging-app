@@ -35,7 +35,7 @@ public class AuthController {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new AuthResponse(token, user.getId(), user.getEmail(), user.getDisplayName()));
+                .body(new AuthResponse(token, user.getId(), user.getEmail(), user.getUsername(), user.getDisplayName()));
     }
 
     @PostMapping("/login")
@@ -43,7 +43,7 @@ public class AuthController {
         User user = userService.authenticate(request);
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getDisplayName()));
+        return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getUsername(), user.getDisplayName()));
     }
 
     @PostMapping("/delete")

@@ -3,6 +3,7 @@ package com.livemessaging.backend.service;
 import com.livemessaging.backend.dto.RoomResponse;
 import com.livemessaging.backend.model.Room;
 import com.livemessaging.backend.model.RoomMember;
+import com.livemessaging.backend.model.RoomType;
 import com.livemessaging.backend.model.User;
 import com.livemessaging.backend.repository.MessageRepository;
 import com.livemessaging.backend.repository.RoomMemberRepository;
@@ -61,6 +62,7 @@ public class RoomService {
 
         Room room = new Room();
         room.setName(normalizedName);
+        room.setType(RoomType.PUBLIC);
         room = roomRepository.save(room);
 
         RoomMember member = new RoomMember();
@@ -147,6 +149,7 @@ public class RoomService {
     }
 
     private RoomResponse toResponse(Room room) {
-        return new RoomResponse(room.getId().toString(), room.getName(), room.getCreatedAt());
+        RoomType type = room.getType() == null ? RoomType.PUBLIC : room.getType();
+        return new RoomResponse(room.getId().toString(), room.getName(), type.name(), room.getCreatedAt());
     }
 }

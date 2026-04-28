@@ -2,6 +2,8 @@ package com.livemessaging.backend.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -22,6 +24,13 @@ public class Room {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private RoomType type = RoomType.PUBLIC;
+
+    @Column(unique = true)
+    private String directKey;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -39,6 +48,22 @@ public class Room {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public RoomType getType() {
+        return type;
+    }
+
+    public void setType(RoomType type) {
+        this.type = type;
+    }
+
+    public String getDirectKey() {
+        return directKey;
+    }
+
+    public void setDirectKey(String directKey) {
+        this.directKey = directKey;
     }
 
     public Instant getCreatedAt() {

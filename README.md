@@ -38,6 +38,7 @@ DB_URL=jdbc:postgresql://localhost:5432/livemessaging
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 JWT_EXPIRATION_MS=86400000
+APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,https://your-frontend.vercel.app
 ```
 
 Frontend env vars:
